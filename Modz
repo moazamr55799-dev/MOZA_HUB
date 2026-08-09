@@ -1,0 +1,101 @@
+local Fluent = loadstring(game:HttpGet("https://github.com"))()
+
+local Window = Fluent:CreateWindow({
+    Title = "MOZA_HUB | Blox Fruits",
+    SubTitle = "by YourName",
+    TabWidth = 160,
+    Size = Vector2.new(580, 460),
+    Acrylic = true,
+    Theme = "Dark"
+})
+
+local Tabs = {
+    Main = Window:AddTab({ Title = "Main", Icon = "home" }),
+    Teleport = Window:AddTab({ Title = "Teleport", Icon = "map-pin" }),
+    Fruit = Window:AddTab({ Title = "Fruit Sniper", Icon = "cherry" }),
+    Settings = Window:AddTab({ Title = "Settings", Icon = "settings" })
+}
+
+local Options = Fluent.Options
+
+local AutoFarmToggle = Tabs.Main:AddToggle("AutoFarm", {Title = "Auto Farm", Default = false })
+
+spawn(function()
+    while true do
+        task.wait()
+        if Options.AutoFarm.Value then
+            pcall(function()
+                for _, enemy in pairs(workspace.Enemies:GetChildren()) do
+                    if enemy:FindFirstChild("Humanoid") and enemy.Humanoid.Health > 0 and enemy:FindFirstChild("HumanoidRootPart") then
+                        local backpack = game.Players.LocalPlayer.Backpack
+                        local character = game.Players.LocalPlayer.Character
+                        local combatTool = backpack:FindFirstChildOfClass("Tool") or character:FindFirstChildOfClass("Tool")
+                        
+                        if combatTool then
+                            character.Humanoid:EquipTool(combatTool)
+                        end
+
+                        character.HumanoidRootPart.CFrame = enemy.HumanoidRootPart.CFrame * CFrame.new(0, 10, 0)
+                        
+                        game:GetService("VirtualUser"):CaptureController()
+                        game:GetService("VirtualUser"):Button1Down(Vector2.new(1280, 720))
+                    end
+                end
+            end)
+        end
+    end
+end)
+
+local SeaDropdown = Tabs.Teleport:AddDropdown("SeaDropdown", {
+    Title = "Select Sea",
+    Values = {"First Sea", "Second Sea", "Third Sea"},
+    Multi = false,
+    Default = 1,
+})
+
+Tabs.Teleport:AddButton({
+    Title = "Teleport to Selected Sea",
+    Description = "Change your current sea world",
+    Callback = function()
+        local selectedSea = Options.SeaDropdown.Value
+        if selectedSea == "First Sea" then
+            game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("TravelMain")
+        elseif selectedSea == "Second Sea" then
+            game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("TravelDressrosa")
+        elseif selectedSea == "Third Sea" then
+            game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("TravelZou")
+        end
+    end
+})
+
+local AutoSnipeToggle = Tabs.Fruit:AddToggle("AutoSnipe", {Title = "Auto Bring Fruits", Default = false })
+
+spawn(function()
+    while true do
+        task.wait(1)
+        if Options.AutoSnipe.Value then
+            pcall(function()
+                for _, item in pairs(workspace:GetChildren()) do
+                    if item:IsA("Tool") and item:FindFirstChild("Handle") then
+                        local character = game.Players.LocalPlayer.Character
+                        if character and character:FindFirstChild("HumanoidRootPart") then
+                            item.Handle.CFrame = character.HumanoidRootPart.CFrame
+                        end
+                    end
+                end
+            end)
+        end
+    end
+end)
+
+local VirtualUser = game:GetService("VirtualUser")
+game:GetService("Players").LocalPlayer.Idled:Connect(function()
+    VirtualUser:CaptureController()
+    VirtualUser:ClickButton2(Vector2.new())
+end)
+
+Fluent:Notify({
+    Title = "MOZA_HUB",
+    Content = "Script loaded successfully with Teleport and Fruit Sniper!",
+    Duration = 5
+})
