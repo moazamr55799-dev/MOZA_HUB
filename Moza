@@ -1,0 +1,235 @@
+local ScreenGui = Instance.new("ScreenGui")
+local MainFrame = Instance.new("Frame")
+local TabsFrame = Instance.new("Frame")
+local ContainerFrame = Instance.new("Frame")
+local UICorner = Instance.new("UICorner")
+local ToggleButton = Instance.new("TextButton")
+local ToggleCorner = Instance.new("UICorner")
+
+ScreenGui.Parent = game.CoreGui
+ScreenGui.Name = "MODZ_HUB_MAX"
+
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 22)
+MainFrame.Position = UDim2.new(0.2, 0, 0.15, 0)
+MainFrame.Size = UDim2.new(0, 720, 0, 520)
+MainFrame.Active = true
+MainFrame.Draggable = true
+
+UICorner.CornerRadius = UDim.new(0, 10)
+UICorner.Parent = MainFrame
+
+TabsFrame.Parent = MainFrame
+TabsFrame.Position = UDim2.new(0, 12, 0, 15)
+TabsFrame.Size = UDim2.new(0, 150, 0, 490)
+TabsFrame.BackgroundColor3 = Color3.fromRGB(24, 24, 28)
+local TabsLayout = Instance.new("UIListLayout")
+TabsLayout.Parent = TabsFrame
+TabsLayout.Padding = UDim.new(0, 6)
+
+ContainerFrame.Parent = MainFrame
+ContainerFrame.Position = UDim2.new(0, 175, 0, 15)
+ContainerFrame.Size = UDim2.new(0, 530, 0, 490)
+ContainerFrame.BackgroundColor3 = Color3.fromRGB(24, 24, 28)
+
+ToggleButton.Parent = ScreenGui
+ToggleButton.Size = UDim2.new(0, 70, 0, 40)
+ToggleButton.Position = UDim2.new(0, 10, 0, 10)
+ToggleButton.BackgroundColor3 = Color3.fromRGB(15, 15, 18)
+ToggleButton.TextColor3 = Color3.fromRGB(255, 215, 0)
+ToggleButton.Text = "MODZ"
+ToggleButton.Font = Enum.Font.SourceSansBold
+ToggleButton.TextSize = 15
+ToggleButton.Active = true
+ToggleButton.Draggable = true
+
+ToggleCorner.CornerRadius = UDim.new(0, 8)
+ToggleCorner.Parent = ToggleButton
+ToggleButton.MouseButton1Click:Connect(function() MainFrame.Visible = not MainFrame.Visible end)
+
+local Farm, FastAttack, FarmBoss, Snipe, BuyFruit, StoreFruit = false, false, false, false, false, false
+local AutoRaid, AutoSeaEvent, AutoStatsMelee, AutoStatsDefense, AutoStatsSword, AutoStatsGun, AutoStatsFruit = false, false, false, false, false, false, false
+local AutoOdenQuest, AutoZoroQuest = false, false
+local SelectWeapon = "Melee"
+local P, VU, RS = game.Players.LocalPlayer, game:GetService("VirtualUser"), game:GetService("ReplicatedStorage").Remotes.CommF_
+
+P.Idled:Connect(function() VU:CaptureController() VU:ClickButton2(Vector2.new()) end)
+
+local Pages = {}
+local function CreatePage(pageName)
+    local Page = Instance.new("ScrollingFrame")
+    Page.Size = UDim2.new(1, 0, 1, 0)
+    Page.BackgroundTransparency = 1
+    Page.CanvasSize = UDim2.new(0, 0, 0, 950)
+    Page.ScrollBarThickness = 5
+    Page.Visible = false
+    Page.Parent = ContainerFrame
+    
+    local ListLayout = Instance.new("UIListLayout")
+    ListLayout.Parent = Page
+    ListLayout.Padding = UDim.new(0, 8)
+    ListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    
+    local TabButton = Instance.new("TextButton")
+    TabButton.Size = UDim2.new(1, 0, 0, 45)
+    TabButton.BackgroundColor3 = Color3.fromRGB(32, 32, 38)
+    TabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
+    TabButton.Text = pageName
+    TabButton.Font = Enum.Font.SourceSansBold
+    TabButton.TextSize = 14
+    TabButton.Parent = TabsFrame
+    
+    TabButton.MouseButton1Click:Connect(function()
+        for _, p in pairs(Pages) do p.Visible = false end
+        Page.Visible = true
+    end)
+    
+    table.insert(Pages, Page)
+    return Page
+end
+
+local function AddToggle(parentPage, text, callback)
+    local Button = Instance.new("TextButton")
+    Button.Parent = parentPage
+    Button.Text = text .. " [ OFF ]"
+    Button.Size = UDim2.new(0, 500, 0, 42)
+    Button.BackgroundColor3 = Color3.fromRGB(38, 38, 44)
+    Button.TextColor3 = Color3.fromRGB(240, 90, 90)
+    Button.Font = Enum.Font.SourceSansBold
+    Button.TextSize = 15
+    
+    local Corner = Instance.new("UICorner")
+    Corner.CornerRadius = UDim.new(0, 6)
+    Corner.Parent = Button
+
+    local enabled = false
+    Button.MouseButton1Click:Connect(function()
+        enabled = not enabled
+        if enabled then
+            Button.Text = text .. " [ ON ]"
+            Button.BackgroundColor3 = Color3.fromRGB(45, 95, 45)
+            Button.TextColor3 = Color3.fromRGB(90, 240, 90)
+        else
+            Button.Text = text .. " [ OFF ]"
+            Button.BackgroundColor3 = Color3.fromRGB(38, 38, 44)
+            Button.TextColor3 = Color3.fromRGB(240, 90, 90)
+        end
+        callback(enabled)
+    end)
+end
+
+local function AddButton(parentPage, text, callback)
+    local Button = Instance.new("TextButton")
+    Button.Parent = parentPage
+    Button.Text = text
+    Button.Size = UDim2.new(0, 500, 0, 42)
+    Button.BackgroundColor3 = Color3.fromRGB(48, 58, 88)
+    Button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Button.Font = Enum.Font.SourceSansBold
+    Button.TextSize = 15
+    
+    local Corner = Instance.new("UICorner")
+    Corner.CornerRadius = UDim.new(0, 6)
+    Corner.Parent = Button
+
+    Button.MouseButton1Click:Connect(callback)
+end
+
+local PageMain = CreatePage("Main Farm")
+local PageItems = CreatePage("Items & Mastery")
+local PageSeaRaids = CreatePage("Sea & Raids")
+local PageFruit = CreatePage("Fruit Hub")
+local PageStats = CreatePage("Stats")
+
+if Pages then Pages.Visible = true end
+
+AddToggle(PageMain, "Level Farm", function(v) Farm = v end)
+AddToggle(PageMain, "Super Fast Attack", function(v) FastAttack = v end)
+AddToggle(PageMain, "Auto Farm All Bosses", function(v) FarmBoss = v end)
+
+AddButton(PageItems, "Equip Style: Melee", function() SelectWeapon = "Melee" end)
+AddButton(PageItems, "Equip Style: Sword", function() SelectWeapon = "Sword" end)
+AddButton(PageItems, "Equip Style: Gun", function() SelectWeapon = "Gun" end)
+AddButton(PageItems, "Equip Style: Blox Fruit", function() SelectWeapon = "Blox Fruit" end)
+AddToggle(PageItems, "Auto Oden Swords Quest (CDK)", function(v) AutoOdenQuest = v end)
+AddToggle(PageItems, "Auto Zoro Swords Quest (TTK)", function(v) AutoZoroQuest = v end)
+
+AddToggle(PageSeaRaids, "Auto Raid", function(v) AutoRaid = v end)
+AddToggle(PageSeaRaids, "Auto Sea Events", function(v) AutoSeaEvent = v end)
+AddButton(PageSeaRaids, "Teleport to First Sea", function() RS:InvokeServer("TravelMain") end)
+AddButton(PageSeaRaids, "Teleport to Second Sea", function() RS:InvokeServer("TravelDressrosa") end)
+AddButton(PageSeaRaids, "Teleport to Third Sea", function() RS:InvokeServer("TravelZou") end)
+
+AddToggle(PageFruit, "Auto Bring Fruits", function(v) Snipe = v end)
+AddToggle(PageFruit, "Auto Gacha Random Fruit", function(v) BuyFruit = v end)
+AddToggle(PageFruit, "Auto Store Blox Fruits", function(v) StoreFruit = v end)
+
+AddToggle(PageStats, "Auto Upgrade Stats: Melee", function(v) AutoStatsMelee = v end)
+AddToggle(PageStats, "Auto Upgrade Stats: Defense", function(v) AutoStatsDefense = v end)
+AddToggle(PageStats, "Auto Upgrade Stats: Sword", function(v) AutoStatsSword = v end)
+AddToggle(PageStats, "Auto Upgrade Stats: Gun", function(v) AutoStatsGun = v end)
+AddToggle(PageStats, "Auto Upgrade Stats: Blox Fruit", function(v) AutoStatsFruit = v end)
+
+local function SafeCheckCharacter()
+    local c = P.Character
+    if c and c:FindFirstChild("HumanoidRootPart") and c:FindFirstChild("Humanoid") and c.Humanoid.Health > 0 then
+        return c
+    end
+    return nil
+end
+
+-- Smart Quest System Data Handlers
+local function GetQuestData()
+    local lvl = P.Data.Level.Value
+    if lvl >= 1 and lvl < 10 then return "BanditQuest1", 1, "Bandit"
+    elseif lvl >= 10 and lvl < 15 then return "MonkeyQuest1", 1, "Monkey"
+    elseif lvl >= 15 and lvl < 30 then return "GorillaQuest1", 1, "Gorilla"
+    elseif lvl >= 30 and lvl < 40 then return "PirateQuest", 1, "Pirate"
+    elseif lvl >= 40 and lvl < 60 then return "PirateQuest", 2, "Brute"
+    elseif lvl >= 60 and lvl < 75 then return "DesertQuest", 1, "Desert Bandit"
+    elseif lvl >= 75 and lvl < 90 then return "DesertQuest", 2, "Desert Officer"
+    elseif lvl >= 90 and lvl < 120 then return "SnowQuest", 1, "Snow Bandit"
+    elseif lvl >= 120 and lvl < 150 then return "SnowQuest", 2, "Snowman"
+    else return "BanditQuest1", 1, "Bandit" end
+end
+
+task.spawn(function()
+    while true do task.wait()
+        if Farm or FarmBoss or AutoRaid or AutoSeaEvent or AutoOdenQuest or AutoZoroQuest then 
+            pcall(function()
+                local c = SafeCheckCharacter()
+                if not c then return end
+                
+                local targets = {}
+                if AutoSeaEvent then
+                    for _, s in pairs(workspace:GetChildren()) do
+                        if (s.Name == "Ship" or s.Name == "SeaBeast" or s.Name == "Sea Beast") and s:FindFirstChild("HumanoidRootPart") then
+                            table.insert(targets, s)
+                        end
+                    end
+                end
+                if #targets == 0 and AutoRaid then
+                    for _, r in pairs(workspace.Enemies:GetChildren()) do
+                        if r:FindFirstChild("Humanoid") and r.Humanoid.Health > 0 and r:FindFirstChild("HumanoidRootPart") then
+                            table.insert(targets, r)
+                        end
+                    end
+                end
+                
+                -- Level Farm & Quest Check Logic integration
+                if #targets == 0 and Farm then
+                    local qName, qID, eName = GetQuestData()
+                    if not P.PlayerGui.Main.Quest.Visible then
+                        -- Safe Invoke Server Quest
+                        RS:InvokeServer("StartQuest", qName, qID)
+                    end
+                    for _, e in pairs(workspace.Enemies:GetChildren()) do
+                        if e.Name == eName and e:FindFirstChild("Humanoid") and e.Humanoid.Health > 0 and e:FindFirstChild("HumanoidRootPart") then
+                            table.insert(targets, e)
+                        end
+                    end
+                end
+
+                if #targets == 0 then
+                    for _, e in pairs(workspace.Enemies:GetChildren()) do
+                  
